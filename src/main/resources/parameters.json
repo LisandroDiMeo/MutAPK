@@ -1,11 +1,11 @@
 {
-	"apkPath": "./apk/com.evancharlton.mileage_3110.apk",
-	"appName": "com.evancharlton.mileage",
-	"mutantsFolder": "./mutants", 
+	"apkPath": "./apk/de.retujo.bierverkostung.apk",
+	"appName": "de.retujo.bierverkostung",
+	"mutantsFolder": "./mutants/",
 	"operatorsDir": "./",
-	"multithreadExec": "true",
+	"multithreadExec": "false",
 	"extraPath": "./extra",
-	"selectionStrategy": "all",
+	"selectionStrategy": "amountMutants",
 	"selectionParameters":{
 		"amountMutants":"34",
 		"perOperator":"false",
