@@ -58,7 +58,7 @@ public class MutAPK {
 	static String mutantsFolder = "";
 	static String extraPath = "";
 	static String operatorsDir = "";
-	static boolean multithread = true;
+	static boolean multithreading = true;
 	static boolean ignoreDeadCode = true;
 	static String selectionStrategy = "";
 
@@ -254,7 +254,7 @@ public class MutAPK {
 			// Add the base apkHashSeparator
 			ApkHashOrder.getInstance().setApkHashSeparator(apkHashSeparator);
 
-			if (multithread) {
+			if (multithreading) {
 				mProcessor.processMultithreaded(mutationLocationList, extraPath, apkName);
 			} else {
 				mProcessor.process(mutationLocationList, extraPath, apkName);
@@ -313,7 +313,7 @@ public class MutAPK {
 			apkPath = getVariableValuesString(jsonObject, "apkPath");
 			appName = getVariableValuesString(jsonObject, "appName");
 			mutantsFolder = getVariableValuesString(jsonObject, "mutantsFolder");
-			multithread = Boolean.valueOf(getVariableValuesString(jsonObject, "multithreadExec"));
+			multithreading = Boolean.valueOf(getVariableValuesString(jsonObject, "multithreadExec"));
 			ignoreDeadCode = Boolean.valueOf(getOptionalVariableValuesString(jsonObject, "ignoreDeadCode"));
 			selectionStrategy = getVariableValues(jsonObject, "selectionStrategy");
 			operatorsDir = getVariableValuesString(jsonObject, "operatorsDir");
@@ -330,7 +330,7 @@ public class MutAPK {
 			System.out.println("mutantsFolder 		| " + mutantsFolder);
 			System.out.println("extraPath 		| " + extraPath);
 			System.out.println("operatorsDir 		| " + operatorsDir);
-			System.out.println("multithread 		| " + multithread);
+			System.out.println("multithread 		| " + multithreading);
 			System.out.println("ignoreDeadCode 		| " + ignoreDeadCode);
 			System.out.println("selectionStrategy 	| " + selectionStrategy);
 

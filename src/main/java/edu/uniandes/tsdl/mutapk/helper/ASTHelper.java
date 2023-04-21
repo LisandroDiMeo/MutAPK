@@ -108,7 +108,6 @@ public class ASTHelper {
 	}
 
 	public static int[] isValidLocation(CommonTree t) {
-
 		if (t.getType() == smaliParser.I_STATEMENT_FORMAT35c_METHOD) {
 			ArrayList<Integer> resp = new ArrayList<Integer>();
 			if (t.getFirstChildWithType(smaliParser.I_REGISTER_LIST).getChildCount() == 3

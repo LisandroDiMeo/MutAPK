@@ -14,7 +14,7 @@ public enum MutationType {
 	WRONG_MAIN_ACTIVITY(8,"WrongMainActivity"),
 	MISSING_PERMISSION_MANIFEST(9,"MissingPermissionManifest"),
 	WRONG_STRING_RESOURCE(10,"WrongStringResource"),
-	NOT_PARCELABLE(11,"NotParcelable"),
+	NOT_PARCELABLE(11,"NotParcelable"), // Does not exist
 	SDK_VERSION(12,"SDKVersion"),
 	LENGTHY_BACKEND_SERVICE(13,"LengthyBackEndService"),
 	LONG_CONNECTION_TIME_OUT(14,"LongConnectionTimeOut"),
@@ -24,7 +24,7 @@ public enum MutationType {
 	NULL_GPS_LOCATION(18,"NullGPSLocation"),
 	INVALID_DATE(19,"InvalidDate"),
 	NULL_BACKEND_SERVICE_RETURN(20,"NullBackEndServiceReturn"),
-	INVALID_METHOD_CALL_ARGUMENT(21,"InvalidMethodCallArgument"),
+	INVALID_METHOD_CALL_ARGUMENT(21,"InvalidMethodCallArgument"), // Does not exist
 	NULL_METHOD_CALL_ARGUMENT(22,"NullMethodCallArgument"),
 	CLOSING_NULL_CURSOR(23,"ClosingNullCursor"),
 	INVALID_INDEX_QUERY_PARAMETER(24,"InvalidIndexQueryParameter"),
@@ -33,11 +33,11 @@ public enum MutationType {
 	FINDVIEWBYID_RETURNS_NULL(27,"FindViewByIdReturnsNull"),
 	INVALID_COLOR(28,"InvalidColor"),
 	INVALID_VIEW_FOCUS(29,"InvalidViewFocus"),
-	BUGGY_GUI_LISTENER(30,"BuggyGUIListener"),
+	BUGGY_GUI_LISTENER(30,"BuggyGUIListener"), // Does not exist
 	INVALID_ID_FINDVIEW(31,"InvalidIDFindView"),
 	INVALID_FILE_PATH(32,"InvalidFilePath"),
 	NULL_INPUT_STREAM(33,"NullInputStream"),
-	NOT_SERIALIZABLE(34,"NotSerializable"),
+	NOT_SERIALIZABLE(34,"NotSerializable"), // Does not exist
 	OOM_LARGE_IMAGE(35,"OOMLargeImage"),
 	LENGTHY_GUI_LISTENER(36,"LengthyGUIListener"),
 	NULL_OUTPUT_STREAM(37,"NullOutputStream"),
