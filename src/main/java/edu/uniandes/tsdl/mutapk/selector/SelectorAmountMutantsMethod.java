@@ -20,8 +20,7 @@ public class SelectorAmountMutantsMethod implements InterfaceSelector {
         SelectorAmountMutants selectorAmountMutants = (SelectorAmountMutants) selectorType;
         int newAmountMutants = selectorAmountMutants.getAmountMutants();
         List<MutationLocation> mutationLocationList = MutationLocationListBuilder.buildList(locations);
-
-        // Check if the amount of PFLocations is lower than the requested by the user
+        
         if (mutationLocationList.isEmpty()) {
             throw new MutAPKException("No mutants were generated.");
         }
