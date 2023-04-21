@@ -7,7 +7,7 @@
 	"extraPath": "./extra",
 	"selectionStrategy": "amountMutants",
 	"selectionParameters":{
-		"amountMutants":"100",
+		"amountMutants":"10",
 		"perOperator":"false",
 		"confidenceLevel":"85",
 		"marginError":"10",

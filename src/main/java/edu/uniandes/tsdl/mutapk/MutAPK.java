@@ -255,6 +255,7 @@ public class MutAPK {
 			ApkHashOrder.getInstance().setApkHashSeparator(apkHashSeparator);
 
 			if (multithreading) {
+				System.out.println("=== Running multithreaded ===");
 				mProcessor.processMultithreaded(mutationLocationList, extraPath, apkName);
 			} else {
 				mProcessor.process(mutationLocationList, extraPath, apkName);
@@ -432,11 +433,6 @@ public class MutAPK {
 		case AMOUNT_MUTANTS_SS:
 			if (amountMutants<=0) {
 				throw new MutAPKException("The \"amountMutants\" parameter must be greater than 0.");				
-			}
-			if (operatorBundle.getAmountOfSelectedOperators() > amountMutants) {
-				throw new MutAPKException("You must request at least as many mutants as selected operators, right now you have selected "
-						+ operatorBundle.getAmountOfSelectedOperators() + " operators but only have asked for " + amountMutants
-						+ " mutants");
 			}
 			break;
 		case REPRESENTATIVE_SUBSET_SS:
