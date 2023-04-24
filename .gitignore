@@ -22,3 +22,4 @@ test/mutantes/
 /apk
 /.idea
 /generated_mutants
+/extra/apks
