@@ -112,26 +112,31 @@ public class MutationsProcessor {
 			Long mutationTime) throws FileNotFoundException, IOException, InterruptedException {
 		File manifest = new File(mutantFolder + File.separator + "AndroidManifest.xml");
 		File smali = new File(mutantFolder + File.separator + "smali");
+		File smali2 = new File(mutantFolder + File.separator + "smali_classes2");
 		File resource = new File(mutantFolder + File.separator + "res");
-		ApkHashSeparator apkHashSeparator = this.generateApkHashSeparator(manifest, smali, resource, mutantIndex);
+		// TODO: I'm not sure what this does, but it's hardcoded to only one smali directory
+		// 	and a few things needs to be changed to make it work, so I just comment it by now.
+//		ApkHashSeparator apkHashSeparator = this.generateApkHashSeparator(manifest, smali, resource, smali2, mutantIndex);
 
-		ApkHashSeparator apkHashSeparatorDuplicate = ApkHashOrder.getInstance()
-				.setApkHashSeparator(apkHashSeparator);
-		if (apkHashSeparatorDuplicate != null) {
-			int compare = apkHashSeparatorDuplicate.getMutantId();
-			if(compare == 0) {
-				System.out.println("The mutant with id: "+apkHashSeparator.getMutantId()+" is equivalent.");
-				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";" + -1 + ";1;0;"+compare+";0");
-			} else {
-				System.out.println("The mutant with id: "+apkHashSeparator.getMutantId()+" is duplicated with mutant with id: "+compare);
-				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";" + -1 + ";0;1;"+compare+";0");
-			}
-			wwriter.newLine();
-			wwriter.flush();
-		} else {
-			generateMutant(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
-					mutationLocation, mutationEnd, mutationTime);
-		}
+//		ApkHashSeparator apkHashSeparatorDuplicate = ApkHashOrder.getInstance()
+//				.setApkHashSeparator(apkHashSeparator);
+		generateMutant(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
+				mutationLocation, mutationEnd, mutationTime);
+//		if (apkHashSeparatorDuplicate != null) {
+//			int compare = apkHashSeparatorDuplicate.getMutantId();
+//			if(compare == 0) {
+//				System.out.println("The mutant with id: "+apkHashSeparator.getMutantId()+" is equivalent.");
+//				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";" + -1 + ";1;0;"+compare+";0");
+//			} else {
+//				System.out.println("The mutant with id: "+apkHashSeparator.getMutantId()+" is duplicated with mutant with id: "+compare);
+//				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";" + -1 + ";0;1;"+compare+";0");
+//			}
+//			wwriter.newLine();
+//			wwriter.flush();
+//		} else {
+//			generateMutant(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
+//					mutationLocation, mutationEnd, mutationTime);
+//		}
 	}
 
 	private void generateMutant(String extraPath, String apkName, int mutantIndex, String mutantFolder,

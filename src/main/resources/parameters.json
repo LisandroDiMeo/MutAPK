@@ -1,13 +1,13 @@
 {
-	"apkPath": "./apk/de.retujo.bierverkostung.apk",
-	"appName": "de.retujo.bierverkostung",
+	"apkPath": "./apk/me.anon.grow.apk",
+	"appName": "me.anon.grow",
 	"mutantsFolder": "./mutants/",
 	"operatorsDir": "./",
 	"multithreadExec": "false",
 	"extraPath": "./extra",
 	"selectionStrategy": "amountMutants",
 	"selectionParameters":{
-		"amountMutants":"10",
+		"amountMutants":"3",
 		"perOperator":"false",
 		"confidenceLevel":"85",
 		"marginError":"10",
