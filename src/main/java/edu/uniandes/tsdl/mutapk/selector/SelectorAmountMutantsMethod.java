@@ -35,6 +35,25 @@ public class SelectorAmountMutantsMethod implements InterfaceSelector {
         for (int i = 0; i < newAmountMutants; i++) {
             randomlySelectedMutants.add(mutationLocationList.get(i));
         }
+
+        HashMap<MutationType, Integer> mutationTypesFrequency = new HashMap<>();
+        for (MutationLocation mutationLocation : randomlySelectedMutants){
+            MutationType mutationType = mutationLocation.getType();
+            if(!mutationTypesFrequency.containsKey(mutationLocation.getType())){
+                mutationTypesFrequency.put(mutationType, 0);
+            }
+            mutationTypesFrequency.put(mutationType, mutationTypesFrequency.get(mutationType) + 1);
+        }
+        System.out.println("==== MUTANTS SELECTED FREQUENCY ===");
+        int totalMutants = newAmountMutants;
+        mutationTypesFrequency.forEach((key, value) -> {
+            System.out.printf("From mutation type %s a total amount of %d were selected (%d%%) %n",
+                    key.getName(),
+                    value,
+                    Math.round(value.doubleValue() / totalMutants * 100.0));
+        });
+        System.out.println("====================================");
+
         return randomlySelectedMutants;
     }
 
