@@ -32,11 +32,14 @@ public class MutationsProcessor {
 	private String mutantsRootFolder;
 	private String mutantRootFolder;
 
-	public MutationsProcessor(String appFolder, String appName, String mutantsRootFolder) {
+	private boolean shouldGenerateAPKs = true;
+
+	public MutationsProcessor(String appFolder, String appName, String mutantsRootFolder, boolean shouldGenerateAPKs) {
 		super();
 		this.appFolder = appFolder;
 		this.appName = appName;
 		this.mutantsRootFolder = mutantsRootFolder;
+		this.shouldGenerateAPKs = shouldGenerateAPKs;
 	}
 
 	private String setupMutantFolder(int mutantIndex) throws IOException {
@@ -48,7 +51,7 @@ public class MutationsProcessor {
 
 	}
 
-	public void process(List<MutationLocation> locations, String extraPath, String apkName) 
+	public void process(List<MutationLocation> locations, String extraPath, String apkName)
 			throws IOException, ParserConfigurationException, SAXException, InterruptedException {
 		MutationOperatorFactory factory = MutationOperatorFactory.getInstance();
 		MutationOperator operator = null;
@@ -145,7 +148,7 @@ public class MutationsProcessor {
 		mutantRootFolder = getMutantsRootFolder() + getAppName() + "-mutant" + mutantIndex
 				+ File.separator;
 		mutantFolder = mutantRootFolder + "src" + File.separator;
-		boolean result = APKToolWrapper.buildAPK(mutantRootFolder, extraPath, apkName, mutantIndex);
+		boolean result = !shouldGenerateAPKs || APKToolWrapper.buildAPK(mutantRootFolder, extraPath, apkName, mutantIndex);
 		File mutatedFile = new File(newMutationPath);
 		mutantRootFolder = getMutantsRootFolder() + getAppName() + "-mutant" + mutantIndex
 				+ File.separator;

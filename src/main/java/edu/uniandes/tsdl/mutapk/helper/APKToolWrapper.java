@@ -20,7 +20,16 @@ public class APKToolWrapper {
         }
         tempFolder.mkdirs();
         System.out.println("> Processing your APK...  ");
-        Process ps = Runtime.getRuntime().exec(new String[]{"java", "-jar", Paths.get(decodedPath, extraPath, "apktool.jar").toAbsolutePath().toString(), "d", Paths.get(decodedPath, path).toAbsolutePath().toString(), "-o", Paths.get(decodedPath, "temp").toAbsolutePath().toString(), "-f"});
+        Process ps = Runtime.getRuntime().exec(new String[]{
+                "java",
+                "-jar",
+                Paths.get(decodedPath, extraPath, "apktool.jar").toAbsolutePath().toString(),
+                "d",
+                Paths.get(decodedPath, path).toAbsolutePath().toString(),
+                "-o",
+                Paths.get(decodedPath, "temp").toAbsolutePath().toString(),
+                "-f"
+        });
         SystemLogProcessOutput log = new SystemLogProcessOutput();
         log.logProcess(ps, true);
         System.out.println("> Wow... that was an amazing APK to proccess!!! :D");
@@ -66,9 +75,9 @@ public class APKToolWrapper {
                 "-o", parsedPath.toAbsolutePath().toString()});
 
         System.out.println("Signing mutant " + mutantIndex + "...");
-        
+
         log.logProcess(pss, true);
-        
+
         if (Files.exists(parsedPathWithAppName.toAbsolutePath())) {
             System.out.println("SUCCESS: The " + mutantIndex + " mutant APK has been generated.");
             return true;

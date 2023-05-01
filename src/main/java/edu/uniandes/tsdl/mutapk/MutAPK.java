@@ -59,6 +59,7 @@ public class MutAPK {
 	static String extraPath = "";
 	static String operatorsDir = "";
 	static boolean multithreading = true;
+	static boolean shouldGenerateAPKs = true;
 	static boolean ignoreDeadCode = true;
 	static String selectionStrategy = "";
 
@@ -241,7 +242,7 @@ public class MutAPK {
 			System.out.println("```sh");
 
 			// Execute mutation phase
-			MutationsProcessor mProcessor = new MutationsProcessor("temp", appName, mutantsFolder);
+			MutationsProcessor mProcessor = new MutationsProcessor("temp", appName, mutantsFolder, shouldGenerateAPKs);
 
 			// Create de apkhash for the base folder
 			File manifest = new File(apkAbsolutePath + File.separator + "AndroidManifest.xml");
@@ -316,6 +317,7 @@ public class MutAPK {
 			mutantsFolder = getVariableValuesString(jsonObject, "mutantsFolder");
 			multithreading = Boolean.valueOf(getVariableValuesString(jsonObject, "multithreadExec"));
 			ignoreDeadCode = Boolean.valueOf(getOptionalVariableValuesString(jsonObject, "ignoreDeadCode"));
+			shouldGenerateAPKs = Boolean.valueOf(getOptionalVariableValuesString(jsonObject, "shouldGenerateAPKs"));
 			selectionStrategy = getVariableValues(jsonObject, "selectionStrategy");
 			operatorsDir = getVariableValuesString(jsonObject, "operatorsDir");
 			extraPath = getVariableValuesString(jsonObject, "extraPath");

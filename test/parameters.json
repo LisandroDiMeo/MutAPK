@@ -4,6 +4,7 @@
 	"mutantsFolder": "./mutants", 
 	"operatorsDir": "./",
 	"multithreadExec": "true",
+	"shouldGenerateAPKs" : "false",
 	"ignoreDeadCode": "true",
 	"extraPath": "./extra",
 	"selectionStrategy": "amountMutants",
