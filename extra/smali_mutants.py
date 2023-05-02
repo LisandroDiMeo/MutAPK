@@ -1,3 +1,4 @@
+#!/usr/bin/python -u
 import argparse
 import glob
 import os
