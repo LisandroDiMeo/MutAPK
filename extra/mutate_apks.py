@@ -7,9 +7,9 @@ import subprocess
 parser = argparse.ArgumentParser(description='Argument Parse of Mutate APKs.')
 
 # define the arguments
-parser.add_argument('jar_path', help='Path to MutAPK Jar.')
-parser.add_argument('apk_paths', help='Path where the apks are located')
-parser.add_argument('amount_mutants', help='Amount of mutants desired', default=10)
+parser.add_argument('--jar-path', help='Path to MutAPK Jar.')
+parser.add_argument('--apk-paths', help='Path where the apks are located')
+parser.add_argument('--amount-mutants', help='Amount of mutants desired', default=10)
 
 # parse the arguments
 args = parser.parse_args()
