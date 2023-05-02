@@ -15,7 +15,7 @@ parser.add_argument('--amount-mutants', help='Amount of mutants desired', defaul
 # parse the arguments
 args = parser.parse_args()
 amount_of_mutants = args.amount_mutants
-apk_dirs = os.listdir(args.apk_paths)
+apks_folder_path = args.apk_paths
 
 if os.path.exists("./extra/mutants_generated"):
     print(" ====== Clearing previous results ======")
@@ -23,10 +23,10 @@ if os.path.exists("./extra/mutants_generated"):
 
 # Craete Directory to store the mutants.
 subprocess.run(['mkdir', './extra/mutants_generated'], stdout=subprocess.PIPE)
-for apk_file_name in apk_dirs:
+for apk_file_name in os.listdir(apks_folder_path):
     # Create APK Dir to store the mutants
     print(f"Starting process of mutation for {apk_file_name}")
-    apk_path = f"./{apk_file_name}/{apk_file_name}"
+    apk_path = f"./{apks_folder_path}/{apk_file_name}"
     package_name = apk_file_name[:-4]
     
     app_mutants_folder = f"./extra/mutants_generated/{package_name}"
