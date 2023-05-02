@@ -70,9 +70,6 @@ public class MutationsProcessor {
 			setupMutantFolder(mutantIndex);
 			Long copyingEnd = System.currentTimeMillis();
 			Long copyingTime = copyingEnd - copyingIni;
-			wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";" + copyingTime + ";0;0;0;0;-1;0");
-			wwriter.newLine();
-			wwriter.flush();
 			Long mutationIni = System.currentTimeMillis();
 			System.out.println("Mutant: " + mutantIndex + " - Type: " + mutationLocation.getType());
 			operator = factory.getOperator(mutationLocation.getType().getId());
@@ -91,7 +88,7 @@ public class MutationsProcessor {
 				
 				// Verify id the mutant is a duplicate
 				verifyDuplicateMutants(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
-						mutationLocation, mutationEnd, mutationTime);
+						mutationLocation, mutationEnd, mutationTime, copyingTime);
 				mutantIndex++;
 			} catch (Exception e) {
 				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
