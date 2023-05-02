@@ -180,17 +180,17 @@ public class MutationsProcessor {
 	public void processMultithreaded(List<MutationLocation> locations, final String extraPath, final String apkName)
 			throws IOException, NullPointerException {
 
-		final BufferedWriter writer = new BufferedWriter(
+		final BufferedWriter mutantsLogWriter = new BufferedWriter(
 				new FileWriter(getMutantsRootFolder() + File.separator + getAppName() + "-mutants.log"));
-		final BufferedWriter wwriter = new BufferedWriter(
+		final BufferedWriter csvWriter = new BufferedWriter(
 				new FileWriter(getMutantsRootFolder() + File.separator + getAppName() + "-times.csv"));
-		wwriter.write("mutantIndex;mutantType;copyingTime;mutationTime;buildingTime;isEqu;isDup;dupID;itCompiles");
-		wwriter.newLine();
-		wwriter.flush();
+		csvWriter.write("mutantIndex;mutantType;copyingTime;mutationTime;buildingTime;isEqu;isDup;dupID;itCompiles");
+		csvWriter.newLine();
+		csvWriter.flush();
 		final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		final List<Future<String>> results = new LinkedList<Future<String>>();
 
-		writer.write("ThreadPool: " + Runtime.getRuntime().availableProcessors() + "\n");
+		mutantsLogWriter.write("ThreadPool: " + Runtime.getRuntime().availableProcessors() + "\n");
 		int mutantIndex = 0;
 
 		for (final MutationLocation mutationLocation : locations) {
@@ -217,17 +217,17 @@ public class MutationsProcessor {
 					mutationLocation.setFilePath(newMutationPath);
 
 					try {
-						operator.performMutation(mutationLocation, writer, currentMutationIndex);
+						operator.performMutation(mutationLocation, mutantsLogWriter, currentMutationIndex);
 						Long mutationEnd = System.currentTimeMillis();
 						Long mutationTime = mutationEnd - mutationIni;
 						
 						// Verify id the mutant is a duplicate
-						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, wwriter,
+						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, csvWriter,
 								mutationLocation, mutationEnd, mutationTime, copyingTime);
 					} catch (InterruptedException | IOException | ParserConfigurationException | SAXException e) {
-						wwriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
-						wwriter.newLine();
-						wwriter.flush();
+						csvWriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
+						csvWriter.newLine();
+						csvWriter.flush();
 						
 						System.out.println(e.getMessage());
 					}
@@ -243,8 +243,8 @@ public class MutationsProcessor {
 
 		executor.shutdown();
 		if (executor.isTerminated()) {
-			writer.close();
-			wwriter.close();
+			mutantsLogWriter.close();
+			csvWriter.close();
 		}
 	}
 
