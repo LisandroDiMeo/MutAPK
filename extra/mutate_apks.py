@@ -51,12 +51,12 @@ for apk_file_name in os.listdir(apks_folder_path):
     }
 
     # Dump the properties to a json file.
-    properties_path = f"{app_mutants_folder}/properties_{package_name}.json"
+    properties_path = f"{app_mutants_folder}/{package_name}-properties.json"
     with open(properties_path, 'w') as f:
         json.dump(properties, f)
 
     print("About to run MutAPK...")
     
-    log_path = f"{app_mutants_folder}/mutapk_{package_name}.log"
+    log_path = f"{app_mutants_folder}/{package_name}-mutapk.log"
     with open(log_path, 'w') as f:
         subprocess.run(['java', '-jar', args.jar_path, properties_path], stdout=f, stderr=f)
