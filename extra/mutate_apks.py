@@ -26,7 +26,7 @@ subprocess.run(['mkdir', './extra/mutants_generated'], stdout=subprocess.PIPE)
 for apk_file_name in apk_dirs:
     # Create APK Dir to store the mutants
     print(f"Starting process of mutation for {apk_file_name}")
-    apk_path = f"./{apk_dirs}/{apk_file_name}"
+    apk_path = f"./{apk_file_name}/{apk_file_name}"
     package_name = apk_file_name[:-4]
     
     app_mutants_folder = f"./extra/mutants_generated/{package_name}"
