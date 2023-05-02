@@ -23,15 +23,19 @@ if os.path.exists("./extra/mutants_generated"):
 
 # Craete Directory to store the mutants.
 subprocess.run(['mkdir', './extra/mutants_generated'], stdout=subprocess.PIPE)
-for apk_dir in apk_dirs:
+for apk_file_name in apk_dirs:
     # Create APK Dir to store the mutants
-    print(f"Starting process of mutation for {apk_dir}")
-    apk_name = apk_dir[:-4]
-    subprocess.run(['mkdir', "./extra/mutants_generated/" + apk_name])
+    print(f"Starting process of mutation for {apk_file_name}")
+    apk_path = f"./{apk_dirs}/{apk_file_name}"
+    package_name = apk_file_name[:-4]
+    
+    app_mutants_folder = f"./extra/mutants_generated/{package_name}"
+    subprocess.run(['mkdir', app_mutants_folder])
+
     properties = {
-        "apkPath": f"./{args.apk_paths}/{apk_dir}",
-        "appName": apk_name,
-        "mutantsFolder": f"./extra/mutants_generated/{apk_name}/",
+        "apkPath": apk_path,
+        "appName": package_name,
+        "mutantsFolder": app_mutants_folder,
         "operatorsDir": "./",
         "multithreadExec": "true",
         "shouldGenerateAPKs" : "false",
@@ -45,9 +49,14 @@ for apk_dir in apk_dirs:
             "baseAPKPath": "./"
         }
     }
-    with open(f"./extra/mutants_generated/{apk_name}/properties_{apk_name}.json", 'w') as f:
+
+    # Dump the properties to a json file.
+    properties_path = f"{app_mutants_folder}/properties_{package_name}.json"
+    with open(properties_path, 'w') as f:
         json.dump(properties, f)
+
     print("About to run MutAPK...")
-    subprocess.run(
-        ['java', '-jar', args.jar_path, f"./extra/mutants_generated/{apk_name}/properties_{apk_name}.json"]
-    )
+    
+    log_path = f"{app_mutants_folder}/mutapk_{package_name}.log"
+    with open(log_path, 'w') as f:
+        subprocess.run(['java', '-jar', args.jar_path, properties_path], stdout=f, stderr=f)
