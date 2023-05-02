@@ -35,7 +35,7 @@ for apk_file_name in os.listdir(apks_folder_path):
     properties = {
         "apkPath": apk_path,
         "appName": package_name,
-        "mutantsFolder": app_mutants_folder,
+        "mutantsFolder": app_mutants_folder + "/",
         "operatorsDir": "./",
         "multithreadExec": "true",
         "shouldGenerateAPKs" : "false",
