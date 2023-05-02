@@ -336,6 +336,7 @@ public class MutAPK {
 			System.out.println("multithread 		| " + multithreading);
 			System.out.println("ignoreDeadCode 		| " + ignoreDeadCode);
 			System.out.println("selectionStrategy 	| " + selectionStrategy);
+			System.out.println("shouldGenerateAPKs 	| " + shouldGenerateAPKs);
 
 			JSONObject selectionParameters = (JSONObject) jsonObject.get("selectionParameters");
 			switch (selectionStrategy) {

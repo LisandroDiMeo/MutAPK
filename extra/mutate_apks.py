@@ -33,6 +33,7 @@ for apk_dir in apk_dirs:
         "mutantsFolder": f"./extra/mutants_generated/{apk_name}/",
         "operatorsDir": "./",
         "multithreadExec": "true",
+        "shouldGenerateAPKs" : "false",
         "extraPath": "./extra",
         "selectionStrategy": "amountMutants",
         "selectionParameters": {
