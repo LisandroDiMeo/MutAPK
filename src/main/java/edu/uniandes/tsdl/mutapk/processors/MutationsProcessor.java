@@ -112,7 +112,7 @@ public class MutationsProcessor {
 
 	private void verifyDuplicateMutants(String extraPath, String apkName, int mutantIndex, String mutantFolder,
 			String newMutationPath, BufferedWriter wwriter, MutationLocation mutationLocation, Long mutationEnd,
-			Long mutationTime) throws FileNotFoundException, IOException, InterruptedException {
+			Long mutationTime, Long copyingTime) throws FileNotFoundException, IOException, InterruptedException {
 		File manifest = new File(mutantFolder + File.separator + "AndroidManifest.xml");
 		File smali = new File(mutantFolder + File.separator + "smali");
 		File smali2 = new File(mutantFolder + File.separator + "smali_classes2");
@@ -124,7 +124,7 @@ public class MutationsProcessor {
 //		ApkHashSeparator apkHashSeparatorDuplicate = ApkHashOrder.getInstance()
 //				.setApkHashSeparator(apkHashSeparator);
 		generateMutant(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
-				mutationLocation, mutationEnd, mutationTime);
+				mutationLocation, mutationEnd, mutationTime, copyingTime);
 //		if (apkHashSeparatorDuplicate != null) {
 //			int compare = apkHashSeparatorDuplicate.getMutantId();
 //			if(compare == 0) {
@@ -144,7 +144,7 @@ public class MutationsProcessor {
 
 	private void generateMutant(String extraPath, String apkName, int mutantIndex, String mutantFolder,
 			String newMutationPath, BufferedWriter wwriter, MutationLocation mutationLocation, Long mutationEnd,
-			Long mutationTime) throws IOException, InterruptedException {
+			Long mutationTime, Long copyingTime) throws IOException, InterruptedException {
 		mutantRootFolder = getMutantsRootFolder() + getAppName() + "-mutant" + mutantIndex
 				+ File.separator;
 		mutantFolder = mutantRootFolder + "src" + File.separator;
@@ -162,8 +162,11 @@ public class MutationsProcessor {
 		}
 		Long buildEnd = System.currentTimeMillis();
 		Long buildingTime = buildEnd - mutationEnd;
-		wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";"
-				+ buildingTime + ";0;0;-1;" + (result?"1":"0"));
+		wwriter.write(mutantIndex + ";" +
+				mutationLocation.getType().getId() + ";" +
+				copyingTime + ";" +
+				mutationTime + ";" +
+				buildingTime + ";0;0;-1;" + (result?"1":"0"));
 		wwriter.newLine();
 		wwriter.flush();
 	}
@@ -201,9 +204,6 @@ public class MutationsProcessor {
 			setupMutantFolder(currentMutationIndex);
 			Long copyingEnd = System.currentTimeMillis();
 			Long copyingTime = copyingEnd - copyingIni;
-			wwriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";" + copyingTime + ";0;0;0;0;-1;0");
-			wwriter.newLine();
-			wwriter.flush();
 			results.add(executor.submit(new Callable<String>() {
 
 				public String call() throws NullPointerException, Exception {
@@ -226,7 +226,7 @@ public class MutationsProcessor {
 						
 						// Verify id the mutant is a duplicate
 						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, wwriter,
-								mutationLocation, mutationEnd, mutationTime);
+								mutationLocation, mutationEnd, mutationTime, copyingTime);
 					} catch (InterruptedException | IOException | ParserConfigurationException | SAXException e) {
 						wwriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
 						wwriter.newLine();
