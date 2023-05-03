@@ -3,6 +3,8 @@ import argparse
 import json
 import os
 import subprocess
+import random
+import sys
 
 # create the parser object
 parser = argparse.ArgumentParser(description='Argument Parse of Mutate APKs.')
@@ -32,6 +34,10 @@ for apk_file_name in os.listdir(apks_folder_path):
     app_mutants_folder = f"./extra/mutants_generated/{package_name}"
     subprocess.run(['mkdir', app_mutants_folder])
 
+    # Generate a random Integer seed for this app
+    random_seed = random.randint(1, sys.maxsize)
+    print(f"Random seed for {apk_file_name}: {random_seed}")
+
     properties = {
         "apkPath": apk_path,
         "appName": package_name,
@@ -47,7 +53,8 @@ for apk_file_name in os.listdir(apks_folder_path):
             "confidenceLevel": "85",
             "marginError": "10",
             "baseAPKPath": "./"
-        }
+        },
+        "randomSeed": str(random_seed),
     }
 
     # Dump the properties to a json file.

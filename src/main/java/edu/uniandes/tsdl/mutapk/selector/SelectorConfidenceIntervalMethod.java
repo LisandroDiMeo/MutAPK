@@ -8,6 +8,7 @@ import java.util.Set;
 
 
 import edu.uniandes.tsdl.mutapk.detectors.MutationLocationListBuilder;
+import edu.uniandes.tsdl.mutapk.helper.Helper;
 import edu.uniandes.tsdl.mutapk.model.MutationType;
 import edu.uniandes.tsdl.mutapk.model.location.MutationLocation;
 
@@ -82,7 +83,7 @@ public class SelectorConfidenceIntervalMethod implements InterfaceSelector {
 		MutationLocation mutationLocation = null;
 		int size = sampleSize - 1;
 		for (int i = 0; i < sampleSize; i++) {
-			int random = (int) Math.floor(Math.random() * (size + 1));
+			int random = (int) Math.floor(Helper.getRandom().nextDouble() * (size + 1));
 			mutationLocation = mutants.remove(random);
 			size--;
 			newMutants.add(mutationLocation);

@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,6 +64,8 @@ public class MutAPK {
 	static boolean ignoreDeadCode = true;
 	static String selectionStrategy = "";
 
+	static long randomSeed = -1;
+
 	// Optional arguments
 	static int amountMutants = -1;
 
@@ -97,6 +100,7 @@ public class MutAPK {
 
 		// Read JSON config file
 		readConfig(args[0]);
+		Helper.setRandomSeed(randomSeed);
 
 		// Read selected operators
 		operatorBundle = new OperatorBundle(operatorsDir);
@@ -320,21 +324,28 @@ public class MutAPK {
 			operatorsDir = getVariableValuesString(jsonObject, "operatorsDir");
 			extraPath = getVariableValuesString(jsonObject, "extraPath");
 
+			if (jsonObject.containsKey("randomSeed")) {
+				randomSeed = Long.parseLong(getVariableValuesString(jsonObject, "randomSeed"));
+			} else {
+				randomSeed = new Random().nextLong();
+			}
+
 			// Impreme valor por defecto
 			System.out.println("");
 			System.out.println("## Parameters provided via config file:");
 			System.out.println("");
-			System.out.println("Name			| Value");
-			System.out.println("------------------------|---------");
-			System.out.println("apkPath 		| " + apkPath);
-			System.out.println("appName 		| " + appName);
+			System.out.println("Name			    | Value");
+			System.out.println("--------------------|---------");
+			System.out.println("apkPath 		    | " + apkPath);
+			System.out.println("appName 		    | " + appName);
 			System.out.println("mutantsFolder 		| " + mutantsFolder);
-			System.out.println("extraPath 		| " + extraPath);
+			System.out.println("extraPath 		    | " + extraPath);
 			System.out.println("operatorsDir 		| " + operatorsDir);
 			System.out.println("multithread 		| " + multithreading);
 			System.out.println("ignoreDeadCode 		| " + ignoreDeadCode);
 			System.out.println("selectionStrategy 	| " + selectionStrategy);
 			System.out.println("shouldGenerateAPKs 	| " + shouldGenerateAPKs);
+			System.out.println("randomSeed 	        | " + randomSeed);
 
 			JSONObject selectionParameters = (JSONObject) jsonObject.get("selectionParameters");
 			switch (selectionStrategy) {

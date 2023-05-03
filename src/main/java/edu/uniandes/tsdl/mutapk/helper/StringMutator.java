@@ -14,7 +14,7 @@ public class StringMutator {
 		}
 		
 		//Randomly select a String Mutator Operator
-		int randomMutator = (int) Math.round((Math.random() * STRING_MUTATORS));
+		int randomMutator = (int) Math.round((Helper.getRandom().nextDouble() * STRING_MUTATORS));
 		switch (randomMutator) {
 	        case 0:  return swapCharacters(str);               
 	        default:  return deleteCharacter(str);                 
@@ -30,8 +30,8 @@ public class StringMutator {
 		int minimum = 0;
 		int maximum = characters.length-1;
 		
-		int i = minimum + (int)(Math.random() * maximum);
-		int j = minimum + (int)(Math.random() * maximum);
+		int i = minimum + (int)(Helper.getRandom().nextDouble() * maximum);
+		int j = minimum + (int)(Helper.getRandom().nextDouble() * maximum);
 		
 		//Swaping characters
 		char temp = characters[i];
@@ -54,7 +54,7 @@ public class StringMutator {
 		int maximum = str.length()-1;
 		
 		if(maximum > 1){
-			Random rnd = new Random();
+			Random rnd = Helper.getRandom();
 			int rndInt = rnd.nextInt( maximum-1);
 		    if(rndInt == 0){
 		    	rndInt = 1;
