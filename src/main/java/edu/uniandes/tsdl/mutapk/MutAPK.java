@@ -90,9 +90,6 @@ public class MutAPK {
 			System.out.println(e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			// Close code snippet from console
-			System.out.println("```");
 		}
 	}
 
@@ -239,7 +236,6 @@ public class MutAPK {
 
 			System.out.println("## Mutation Process Log");
 			System.out.println();
-			System.out.println("```sh");
 
 			// Execute mutation phase
 			MutationsProcessor mProcessor = new MutationsProcessor("temp", appName, mutantsFolder, shouldGenerateAPKs);
@@ -261,6 +257,8 @@ public class MutAPK {
 			} else {
 				mProcessor.process(mutationLocationList, extraPath, apkName);
 			}
+
+			System.out.println("=== MutAPK finished ===");
 		}
 
 	}

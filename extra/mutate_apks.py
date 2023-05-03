@@ -60,3 +60,5 @@ for apk_file_name in os.listdir(apks_folder_path):
     log_path = f"{app_mutants_folder}/{package_name}-mutapk.log"
     with open(log_path, 'w') as f:
         subprocess.run(['java', '-jar', args.jar_path, properties_path], stdout=f, stderr=f)
+
+    print("MutAPK finished.")

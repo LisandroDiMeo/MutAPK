@@ -7,10 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -187,6 +184,8 @@ public class MutationsProcessor {
 		csvWriter.write("mutantIndex;mutantType;copyingTime;mutationTime;buildingTime;isEqu;isDup;dupID;itCompiles");
 		csvWriter.newLine();
 		csvWriter.flush();
+
+		CountDownLatch latch = new CountDownLatch(locations.size());
 		final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		final List<Future<String>> results = new LinkedList<Future<String>>();
 
@@ -202,34 +201,38 @@ public class MutationsProcessor {
 			Long copyingEnd = System.currentTimeMillis();
 			Long copyingTime = copyingEnd - copyingIni;
 			results.add(executor.submit(new Callable<String>() {
-
 				public String call() throws NullPointerException, Exception {
-					// Select operator
-					Long mutationIni = System.currentTimeMillis();
-					MutationOperatorFactory factory = MutationOperatorFactory.getInstance();
-					MutationOperator operator = factory.getOperator(mutationLocation.getType().getId());
-
-					// Set up folders
-					String mutantRootFolder = getMutantsRootFolder() + File.separator + getAppName() + "-mutant"
-							+ currentMutationIndex + File.separator;
-					String mutantFolder = mutantRootFolder + "src" + File.separator;
-					String newMutationPath = mutationLocation.getFilePath().replace(appFolder, mutantFolder);
-					mutationLocation.setFilePath(newMutationPath);
-
 					try {
+						// Select operator
+						Long mutationIni = System.currentTimeMillis();
+						MutationOperatorFactory factory = MutationOperatorFactory.getInstance();
+						MutationOperator operator = factory.getOperator(mutationLocation.getType().getId());
+
+						// Set up folders
+						String mutantRootFolder = getMutantsRootFolder() + File.separator + getAppName() + "-mutant"
+								+ currentMutationIndex + File.separator;
+						String mutantFolder = mutantRootFolder + "src" + File.separator;
+						String newMutationPath = mutationLocation.getFilePath().replace(appFolder, mutantFolder);
+						mutationLocation.setFilePath(newMutationPath);
+
 						operator.performMutation(mutationLocation, mutantsLogWriter, currentMutationIndex);
 						Long mutationEnd = System.currentTimeMillis();
 						Long mutationTime = mutationEnd - mutationIni;
-						
+
 						// Verify id the mutant is a duplicate
 						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, csvWriter,
 								mutationLocation, mutationEnd, mutationTime, copyingTime);
-					} catch (InterruptedException | IOException | ParserConfigurationException | SAXException e) {
+					} catch (Exception e) {
+						System.out.println("Error in mutant: " + currentMutationIndex + " - "
+								+ mutationLocation.getType().getName());
+						System.out.println(e.getMessage());
+
 						csvWriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
 						csvWriter.newLine();
 						csvWriter.flush();
-						
-						System.out.println(e.getMessage());
+					} finally {
+						System.out.println("Mutant " + currentMutationIndex + " finished");
+						latch.countDown();
 					}
 
 					return "";
@@ -241,11 +244,22 @@ public class MutationsProcessor {
 		System.out.println("The length of hasmap is: " + ApkHashOrder.getInstance().getLength());
 		System.out.println("------------------------------------------------------------------------------------");
 
-		executor.shutdown();
-		if (executor.isTerminated()) {
-			mutantsLogWriter.close();
-			csvWriter.close();
+		try {
+			// We wait until all tasks have finished (at most 30 seconds per task)
+			boolean finishedWithCountZero = latch.await(locations.size() * 30, TimeUnit.SECONDS);
+			if (!finishedWithCountZero) {
+				System.out.println("CountDownLatch was not zero after waiting 30 seconds per task: " + latch.getCount()
+						+ " tasks were not finished");
+			}
+		} catch (InterruptedException e) {
+			System.out.println("CountDownLatch was interrupted before all tasks finished: " + e.getMessage());
 		}
+
+		executor.shutdownNow();
+		System.out.println("Executor finished all tasks");
+
+		mutantsLogWriter.close();
+		csvWriter.close();
 	}
 
 	public String getAppFolder() {
