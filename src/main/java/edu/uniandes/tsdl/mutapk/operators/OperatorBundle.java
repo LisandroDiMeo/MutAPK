@@ -69,8 +69,7 @@ public class OperatorBundle {
 			textBasedDetectors.add(new WrongStringResourceDetector());
 		}
 		if (bundle.containsKey(MutationType.INVALID_COLOR.getId() + "")) {
-			// Commenting Invalid Color Mutation, since is not very helpful.
-			// textBasedDetectors.add(new InvalidColorDetector());
+			textBasedDetectors.add(new InvalidColorDetector());
 		}
 
 		return textBasedDetectors;
