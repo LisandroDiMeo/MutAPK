@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import java.nio.file.Paths;
+import java.util.Random;
 
 public class Helper {
 
@@ -34,6 +35,8 @@ public class Helper {
 	public static final String MAX_SDK_VERSION = "android:maxSdkVersion";
 	public static final String STRINGS = "strings.xml";
 	public static final String COLORS = "colors.xml";
+
+	private static Random random = new Random();
 
 	public static Helper getInstance() {
 		if (instance == null) {
@@ -55,8 +58,16 @@ public class Helper {
 	}
 
 
+	public static Random getRandom() {
+		return Helper.random;
+	}
 
-//	public String getCurrentDirectory() throws UnsupportedEncodingException {
+	public static void setRandomSeed(long randomSeed) {
+		Helper.random = new Random(randomSeed);
+	}
+
+
+	//	public String getCurrentDirectory() throws UnsupportedEncodingException {
 //		if (currDirectory.equals("")) {
 //			String currentDirectory = APKToolWrapper.class.getProtectionDomain().getCodeSource().getLocation()
 //					.getPath();

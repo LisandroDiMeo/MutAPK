@@ -26,6 +26,12 @@ public class WrongMainActivityDetector extends TextBasedDetector {
 	public List<MutationLocation> analyzeApp(String rootPath) throws ParserConfigurationException, SAXException, IOException {
 		List<MutationLocation> locations = new ArrayList<MutationLocation>();
 		String mainActivity = Helper.getInstance().getMainActivity();
+		List<String> activities = Helper.getInstance().getActivities();
+
+		if (activities.size() == 1) {
+			// App only has one activity declared, so we can't swap the Main activity with another one
+			return locations;
+		}
 
 		String path = rootPath + File.separator + Helper.MANIFEST;
 

@@ -7,10 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -70,9 +67,6 @@ public class MutationsProcessor {
 			setupMutantFolder(mutantIndex);
 			Long copyingEnd = System.currentTimeMillis();
 			Long copyingTime = copyingEnd - copyingIni;
-			wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";" + copyingTime + ";0;0;0;0;-1;0");
-			wwriter.newLine();
-			wwriter.flush();
 			Long mutationIni = System.currentTimeMillis();
 			System.out.println("Mutant: " + mutantIndex + " - Type: " + mutationLocation.getType());
 			operator = factory.getOperator(mutationLocation.getType().getId());
@@ -91,7 +85,7 @@ public class MutationsProcessor {
 				
 				// Verify id the mutant is a duplicate
 				verifyDuplicateMutants(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
-						mutationLocation, mutationEnd, mutationTime);
+						mutationLocation, mutationEnd, mutationTime, copyingTime);
 				mutantIndex++;
 			} catch (Exception e) {
 				wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
@@ -112,7 +106,7 @@ public class MutationsProcessor {
 
 	private void verifyDuplicateMutants(String extraPath, String apkName, int mutantIndex, String mutantFolder,
 			String newMutationPath, BufferedWriter wwriter, MutationLocation mutationLocation, Long mutationEnd,
-			Long mutationTime) throws FileNotFoundException, IOException, InterruptedException {
+			Long mutationTime, Long copyingTime) throws FileNotFoundException, IOException, InterruptedException {
 		File manifest = new File(mutantFolder + File.separator + "AndroidManifest.xml");
 		File smali = new File(mutantFolder + File.separator + "smali");
 		File smali2 = new File(mutantFolder + File.separator + "smali_classes2");
@@ -124,7 +118,7 @@ public class MutationsProcessor {
 //		ApkHashSeparator apkHashSeparatorDuplicate = ApkHashOrder.getInstance()
 //				.setApkHashSeparator(apkHashSeparator);
 		generateMutant(extraPath, apkName, mutantIndex, mutantFolder, newMutationPath, wwriter,
-				mutationLocation, mutationEnd, mutationTime);
+				mutationLocation, mutationEnd, mutationTime, copyingTime);
 //		if (apkHashSeparatorDuplicate != null) {
 //			int compare = apkHashSeparatorDuplicate.getMutantId();
 //			if(compare == 0) {
@@ -144,7 +138,7 @@ public class MutationsProcessor {
 
 	private void generateMutant(String extraPath, String apkName, int mutantIndex, String mutantFolder,
 			String newMutationPath, BufferedWriter wwriter, MutationLocation mutationLocation, Long mutationEnd,
-			Long mutationTime) throws IOException, InterruptedException {
+			Long mutationTime, Long copyingTime) throws IOException, InterruptedException {
 		mutantRootFolder = getMutantsRootFolder() + getAppName() + "-mutant" + mutantIndex
 				+ File.separator;
 		mutantFolder = mutantRootFolder + "src" + File.separator;
@@ -162,8 +156,11 @@ public class MutationsProcessor {
 		}
 		Long buildEnd = System.currentTimeMillis();
 		Long buildingTime = buildEnd - mutationEnd;
-		wwriter.write(mutantIndex + ";" + mutationLocation.getType().getId() + ";0;" + mutationTime + ";"
-				+ buildingTime + ";0;0;-1;" + (result?"1":"0"));
+		wwriter.write(mutantIndex + ";" +
+				mutationLocation.getType().getId() + ";" +
+				copyingTime + ";" +
+				mutationTime + ";" +
+				buildingTime + ";0;0;-1;" + (result?"1":"0"));
 		wwriter.newLine();
 		wwriter.flush();
 	}
@@ -180,17 +177,19 @@ public class MutationsProcessor {
 	public void processMultithreaded(List<MutationLocation> locations, final String extraPath, final String apkName)
 			throws IOException, NullPointerException {
 
-		final BufferedWriter writer = new BufferedWriter(
+		final BufferedWriter mutantsLogWriter = new BufferedWriter(
 				new FileWriter(getMutantsRootFolder() + File.separator + getAppName() + "-mutants.log"));
-		final BufferedWriter wwriter = new BufferedWriter(
+		final BufferedWriter csvWriter = new BufferedWriter(
 				new FileWriter(getMutantsRootFolder() + File.separator + getAppName() + "-times.csv"));
-		wwriter.write("mutantIndex;mutantType;copyingTime;mutationTime;buildingTime;isEqu;isDup;dupID;itCompiles");
-		wwriter.newLine();
-		wwriter.flush();
+		csvWriter.write("mutantIndex;mutantType;copyingTime;mutationTime;buildingTime;isEqu;isDup;dupID;itCompiles");
+		csvWriter.newLine();
+		csvWriter.flush();
+
+		CountDownLatch latch = new CountDownLatch(locations.size());
 		final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		final List<Future<String>> results = new LinkedList<Future<String>>();
 
-		writer.write("ThreadPool: " + Runtime.getRuntime().availableProcessors() + "\n");
+		mutantsLogWriter.write("ThreadPool: " + Runtime.getRuntime().availableProcessors() + "\n");
 		int mutantIndex = 0;
 
 		for (final MutationLocation mutationLocation : locations) {
@@ -201,38 +200,39 @@ public class MutationsProcessor {
 			setupMutantFolder(currentMutationIndex);
 			Long copyingEnd = System.currentTimeMillis();
 			Long copyingTime = copyingEnd - copyingIni;
-			wwriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";" + copyingTime + ";0;0;0;0;-1;0");
-			wwriter.newLine();
-			wwriter.flush();
 			results.add(executor.submit(new Callable<String>() {
-
 				public String call() throws NullPointerException, Exception {
-					// Select operator
-					Long mutationIni = System.currentTimeMillis();
-					MutationOperatorFactory factory = MutationOperatorFactory.getInstance();
-					MutationOperator operator = factory.getOperator(mutationLocation.getType().getId());
-
-					// Set up folders
-					String mutantRootFolder = getMutantsRootFolder() + File.separator + getAppName() + "-mutant"
-							+ currentMutationIndex + File.separator;
-					String mutantFolder = mutantRootFolder + "src" + File.separator;
-					String newMutationPath = mutationLocation.getFilePath().replace(appFolder, mutantFolder);
-					mutationLocation.setFilePath(newMutationPath);
-
 					try {
-						operator.performMutation(mutationLocation, writer, currentMutationIndex);
+						// Select operator
+						Long mutationIni = System.currentTimeMillis();
+						MutationOperatorFactory factory = MutationOperatorFactory.getInstance();
+						MutationOperator operator = factory.getOperator(mutationLocation.getType().getId());
+
+						// Set up folders
+						String mutantRootFolder = getMutantsRootFolder() + File.separator + getAppName() + "-mutant"
+								+ currentMutationIndex + File.separator;
+						String mutantFolder = mutantRootFolder + "src" + File.separator;
+						String newMutationPath = mutationLocation.getFilePath().replace(appFolder, mutantFolder);
+						mutationLocation.setFilePath(newMutationPath);
+
+						operator.performMutation(mutationLocation, mutantsLogWriter, currentMutationIndex);
 						Long mutationEnd = System.currentTimeMillis();
 						Long mutationTime = mutationEnd - mutationIni;
-						
+
 						// Verify id the mutant is a duplicate
-						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, wwriter,
-								mutationLocation, mutationEnd, mutationTime);
-					} catch (InterruptedException | IOException | ParserConfigurationException | SAXException e) {
-						wwriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
-						wwriter.newLine();
-						wwriter.flush();
-						
+						verifyDuplicateMutants(extraPath, apkName, currentMutationIndex, mutantFolder, newMutationPath, csvWriter,
+								mutationLocation, mutationEnd, mutationTime, copyingTime);
+					} catch (Exception e) {
+						System.out.println("Error in mutant: " + currentMutationIndex + " - "
+								+ mutationLocation.getType().getName());
 						System.out.println(e.getMessage());
+
+						csvWriter.write(currentMutationIndex + ";" + mutationLocation.getType().getId() + ";0;0;0;0;1;0;-1");
+						csvWriter.newLine();
+						csvWriter.flush();
+					} finally {
+						System.out.println("Mutant " + currentMutationIndex + " finished");
+						latch.countDown();
 					}
 
 					return "";
@@ -244,11 +244,22 @@ public class MutationsProcessor {
 		System.out.println("The length of hasmap is: " + ApkHashOrder.getInstance().getLength());
 		System.out.println("------------------------------------------------------------------------------------");
 
-		executor.shutdown();
-		if (executor.isTerminated()) {
-			writer.close();
-			wwriter.close();
+		try {
+			// We wait until all tasks have finished (at most 30 seconds per task)
+			boolean finishedWithCountZero = latch.await(locations.size() * 30, TimeUnit.SECONDS);
+			if (!finishedWithCountZero) {
+				System.out.println("CountDownLatch was not zero after waiting 30 seconds per task: " + latch.getCount()
+						+ " tasks were not finished");
+			}
+		} catch (InterruptedException e) {
+			System.out.println("CountDownLatch was interrupted before all tasks finished: " + e.getMessage());
 		}
+
+		executor.shutdownNow();
+		System.out.println("Executor finished all tasks");
+
+		mutantsLogWriter.close();
+		csvWriter.close();
 	}
 
 	public String getAppFolder() {

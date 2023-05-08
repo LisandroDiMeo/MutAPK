@@ -1,20 +1,23 @@
+#!/usr/bin/python3 -u
 import argparse
 import json
 import os
 import subprocess
+import random
+import sys
 
 # create the parser object
 parser = argparse.ArgumentParser(description='Argument Parse of Mutate APKs.')
 
 # define the arguments
-parser.add_argument('jar_path', help='Path to MutAPK Jar.')
-parser.add_argument('apk_paths', help='Path where the apks are located')
-parser.add_argument('amount_mutants', help='Amount of mutants desired', default=10)
+parser.add_argument('--jar-path', help='Path to MutAPK Jar.')
+parser.add_argument('--apk-paths', help='Path where the apks are located')
+parser.add_argument('--amount-mutants', help='Amount of mutants desired', default=10)
 
 # parse the arguments
 args = parser.parse_args()
 amount_of_mutants = args.amount_mutants
-apk_dirs = os.listdir(args.apk_paths)
+apks_folder_path = args.apk_paths
 
 if os.path.exists("./extra/mutants_generated"):
     print(" ====== Clearing previous results ======")
@@ -22,17 +25,26 @@ if os.path.exists("./extra/mutants_generated"):
 
 # Craete Directory to store the mutants.
 subprocess.run(['mkdir', './extra/mutants_generated'], stdout=subprocess.PIPE)
-for apk_dir in apk_dirs:
+for apk_file_name in os.listdir(apks_folder_path):
     # Create APK Dir to store the mutants
-    print(f"Starting process of mutation for {apk_dir}")
-    apk_name = apk_dir[:-4]
-    subprocess.run(['mkdir', "./extra/mutants_generated/" + apk_name])
+    print(f"Starting process of mutation for {apk_file_name}")
+    apk_path = f"./{apks_folder_path}/{apk_file_name}"
+    package_name = apk_file_name[:-4]
+    
+    app_mutants_folder = f"./extra/mutants_generated/{package_name}"
+    subprocess.run(['mkdir', app_mutants_folder])
+
+    # Generate a random Integer seed for this app
+    random_seed = random.randint(1, sys.maxsize)
+    print(f"Random seed for {apk_file_name}: {random_seed}")
+
     properties = {
-        "apkPath": f"./{args.apk_paths}/{apk_dir}",
-        "appName": apk_name,
-        "mutantsFolder": f"./extra/mutants_generated/{apk_name}/",
+        "apkPath": apk_path,
+        "appName": package_name,
+        "mutantsFolder": app_mutants_folder + "/",
         "operatorsDir": "./",
         "multithreadExec": "true",
+        "shouldGenerateAPKs" : "false",
         "extraPath": "./extra",
         "selectionStrategy": "amountMutants",
         "selectionParameters": {
@@ -41,11 +53,19 @@ for apk_dir in apk_dirs:
             "confidenceLevel": "85",
             "marginError": "10",
             "baseAPKPath": "./"
-        }
+        },
+        "randomSeed": str(random_seed),
     }
-    with open(f"./extra/mutants_generated/{apk_name}/properties_{apk_name}.json", 'w') as f:
+
+    # Dump the properties to a json file.
+    properties_path = f"{app_mutants_folder}/{package_name}-properties.json"
+    with open(properties_path, 'w') as f:
         json.dump(properties, f)
+
     print("About to run MutAPK...")
-    subprocess.run(
-        ['java', '-jar', args.jar_path, f"./extra/mutants_generated/{apk_name}/properties_{apk_name}.json"]
-    )
+    
+    log_path = f"{app_mutants_folder}/{package_name}-mutapk.log"
+    with open(log_path, 'w') as f:
+        subprocess.run(['java', '-jar', args.jar_path, properties_path], stdout=f, stderr=f)
+
+    print("MutAPK finished.")

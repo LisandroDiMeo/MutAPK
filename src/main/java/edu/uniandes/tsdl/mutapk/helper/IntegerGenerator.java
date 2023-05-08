@@ -7,7 +7,7 @@ public class IntegerGenerator {
 
 	public static int generateRandomInt(int minimum, int maximum){
 		
-		return minimum + (int)(Math.random() * maximum);
+		return minimum + (int)(Helper.getRandom().nextDouble() * maximum);
 	}
 	
 	

@@ -1,10 +1,6 @@
 package edu.uniandes.tsdl.mutapk.helper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +23,9 @@ import edu.uniandes.tsdl.mutapk.model.SmaliAST;
 import edu.uniandes.tsdl.mutapk.model.location.ASTMutationLocation;
 import edu.uniandes.tsdl.mutapk.model.location.MutationLocation;
 import edu.uniandes.tsdl.mutapk.operators.OperatorBundle;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 public class ASTHelper {
 
@@ -257,8 +256,8 @@ public class ASTHelper {
 	}
 	
 
-	public static HashMap<MutationType, List<MutationLocation>> findLocations(SmaliAST smaliAST, OperatorBundle operatorBundle) {
-		
+	public static HashMap<MutationType, List<MutationLocation>> findLocations(SmaliAST smaliAST, OperatorBundle operatorBundle) throws ParserConfigurationException, IOException, SAXException {
+		List<String> activities = Helper.getInstance().getActivities();
 		HashMap<MutationType, List<MutationLocation>> mutationLocations = new HashMap<>();
 		
 		MutationLocation location= null;
@@ -291,6 +290,11 @@ public class ASTHelper {
 							mutationLocations.get(muType).add(location);
 						}
 					} else {
+						if (muType.getId() == MutationType.DIFFERENT_ACTIVITY_INTENT_DEFINITION.getId() && activities.size() == 1) {
+							// Skip Different Activity Intent Definition mutator when there is only one activity defined in app
+							continue;
+						}
+
 						location = ASTMutationLocation.buildLocation(filePath, b.getLine(), -1, -1, -1, b.getLine(), -1, muType, b.getTree());
 						if(!mutationLocations.containsKey(muType)){
 							mutationLocations.put(muType, new ArrayList<MutationLocation>());
