@@ -13,7 +13,7 @@ parser.add_argument('output_dir', help='Output dir where the apk mutants will be
 parser.add_argument('--apk_path', help='APK to baksmali -> mutate -> smali', default="./apk/me.anon.grow.apk")
 parser.add_argument('--apk_tool_path', help='APK Tool Path', default="./extra")
 parser.add_argument('--apk_signer_path', help='APK Signer Path', default="./extra")
-parser.add_argument('--delete_non_signed', help='y/n to delete non signed apk', default="y")
+parser.add_argument('--delete_non_signed', help='y/n to delete non signed apk', default="n")
 
 args = parser.parse_args()
 
@@ -47,15 +47,19 @@ def process_mutant(mutant_id, file_path, program_args, baksmali_apk_path):
     subprocess.run(["cp", "-R", baksmali_apk_path, mutant_dir])
     # find the file to change TODO: This only takes AST Changes, strings, colors and Manifest will be added
     directories_to_search = glob.glob(mutant_dir + '/temp/smali*')
+    directories_to_search.append(mutant_dir + "/temp/res/values")
     file_to_change_path = ""
-    for directory in directories_to_search:
-        file_pattern = "*" + mutated_file
-        find_command = ["find", directory, "-type", "f", "-name", file_pattern]
-        result = subprocess.run(find_command, stdout=subprocess.PIPE)
-        output = result.stdout.decode('utf-8')
-        if len(output) > 0:
-            file_to_change_path = output
-            break
+    if mutated_file == "AndroidManifest.xml":
+        file_to_change_path = mutant_dir + "/temp/AndroidManifest.xml"
+    else:
+        for directory in directories_to_search:
+            file_pattern = "*" + mutated_file
+            find_command = ["find", directory, "-type", "f", "-name", file_pattern]
+            result = subprocess.run(find_command, stdout=subprocess.PIPE)
+            output = result.stdout.decode('utf-8')
+            if len(output) > 0:
+                file_to_change_path = output
+                break
     print(f"The file to change for mutant {mutant_id} is at " + file_to_change_path)
     dir_of_file_to_change = os.path.dirname(file_to_change_path)
     # override the file and smali files
@@ -71,11 +75,20 @@ def process_mutant(mutant_id, file_path, program_args, baksmali_apk_path):
         mutant_dir + "/" + os.path.basename(program_args.apk_path),
         "-f"])
     print(f"> Smalling finished for mutant {mutant_id}. Now signing it...")
+    # sign_apk_command = [build_tools_dir + "apksigner", "sign", "--ks", debug_keystore_path,
+    #                     "--ks-key-alias", "androiddebugkey", "--ks-pass", "pass:android",
+    #                     "--key-pass", "pass:android", apk]
     subprocess.run([
-        "java",
-        "-jar",
-        f"{program_args.apk_tool_path}/uber-apk-signer.jar",
-        "-a",
+        '/Users/lisandro.di.mateo/Library/Android/sdk/build-tools/31.0.0/apksigner',
+        'sign',
+        '--ks',
+        '/Users/lisandro.di.mateo/.android/debug.keystore',
+        '--ks-key-alias',
+        'androiddebugkey',
+        '--ks-pass',
+        'pass:android',
+        '--key-pass',
+        'pass:android',
         mutant_dir + "/" + os.path.basename(program_args.apk_path)
     ])
     print(f"> Signing process for mutant {mutant_id} finished... ")
