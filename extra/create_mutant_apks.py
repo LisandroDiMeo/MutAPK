@@ -94,8 +94,8 @@ def process_mutant(mutant_id, mutant_folder, program_args, decompilation_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Argument parser for Creating Mutatant APKs")
 
-    parser.add_argument('mutants_path', help='Path where the mutants are stored')
-    parser.add_argument('output_dir', help='Output dir where the apk mutants will be stored')
+    parser.add_argument('--mutants_path', help='Path where the mutants are stored')
+    parser.add_argument('--output_dir', help='Output dir where the apk mutants will be stored')
     parser.add_argument('--apk_path', help='APK path')
     parser.add_argument('--apk_tool_path', help='APK Tool Path')
     parser.add_argument('--apk_signer_path', help='APK Signer Path')
