@@ -148,3 +148,6 @@ if __name__ == "__main__":
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(mutant_folders):
             mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[idx], args, decompilation_path)
+
+    # Clear decompliation path
+    shutil.rmtree(decompilation_path)
