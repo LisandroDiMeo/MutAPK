@@ -98,7 +98,6 @@ if __name__ == "__main__":
     parser.add_argument('--output_dir', help='Output dir where the apk mutants will be stored')
     parser.add_argument('--apk_path', help='APK path')
     parser.add_argument('--apk_tool_path', help='APK Tool Path')
-    parser.add_argument('--apk_signer_path', help='APK Signer Path')
 
     args = parser.parse_args()
 
@@ -115,10 +114,6 @@ if __name__ == "__main__":
         print("APK Tool path does not exist")
         exit(1)
 
-    if not os.path.exists(args.apk_signer_path):
-        print("APK Signer path does not exist")
-        exit(1)
-
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
@@ -127,7 +122,6 @@ if __name__ == "__main__":
     print("-> Output dir: " + args.output_dir)
     print("-> APK path: " + args.apk_path)
     print("-> APK Tool path: " + args.apk_tool_path)
-    print("-> APK Signer path: " + args.apk_signer_path)
 
     mutant_folders = list(filter(lambda f: os.path.isdir(f"{args.mutants_path}/{f}"), os.listdir(args.mutants_path)))
     print(f"Found {len(mutant_folders)} mutants")
