@@ -44,37 +44,18 @@ def sign_apk(apk):
     os.remove(str(apk) + ".idsig")
 
 
-def process_mutant(mutant_id, mutant_folder, program_args, decompilation_path):
+def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
     mutant_folder_path = f"{program_args.mutants_path}/{mutant_folder}"
     mutated_file = os.listdir(mutant_folder_path)[0]
-    mutated_file_path = f"{mutant_folder_path}/{mutated_file}"
+    mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
     
     # copy the decompilation path content to the mutant output folder
     mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
     shutil.copytree(decompilation_path, mutant_output_dir)
-    
-    # find the file to change
-    directories_to_search = glob.glob(mutant_output_dir + '/smali*')
-    directories_to_search.append(mutant_output_dir + "/res/values")
-    file_to_change_path = ""
-    
-    if mutated_file == "AndroidManifest.xml":
-        file_to_change_path = mutant_output_dir + "/AndroidManifest.xml"
-    else:
-        for directory in directories_to_search:
-            file_pattern = "*" + mutated_file
-            find_command = ["find", directory, "-type", "f", "-name", file_pattern]
-            result = subprocess.run(find_command, stdout=subprocess.PIPE)
-            output = result.stdout.decode('utf-8')
-            if len(output) > 0:
-                file_to_change_path = output
-                break
-    
-    print(f"The file to change for mutant {mutant_id} is at " + file_to_change_path)
-    dir_of_file_to_change = os.path.dirname(file_to_change_path)
-    
-    # override the file and smali files
-    subprocess.run(["cp", mutated_file_path, dir_of_file_to_change])
+        
+    # override the file that was mutated in the mutant output dir
+    dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
+    shutil.copyfile(mutated_file_path, dest_file)
 
     print(f"> Compiling the mutant {mutant_id} APK...")
     mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
@@ -123,8 +104,29 @@ if __name__ == "__main__":
     print("-> APK path: " + args.apk_path)
     print("-> APK Tool path: " + args.apk_tool_path)
 
-    mutant_folders = list(filter(lambda f: os.path.isdir(f"{args.mutants_path}/{f}"), os.listdir(args.mutants_path)))
+    mutants_path_listing = map(lambda file: f"{args.mutants_path}/{file}", os.listdir(args.mutants_path))
+
+    # Find mutant folders
+    mutant_folders = list(filter(lambda f: os.path.isdir(f), mutants_path_listing))
     print(f"Found {len(mutant_folders)} mutants")
+
+    # Find and parse mutants log file
+    aux = list(filter(lambda f: os.path.isfile(f) and f.endswith("-mutants.log"), mutants_path_listing))
+    if len(aux) == 0:
+        print("Mutants log file not found")
+        exit(1)
+
+    mutants_log_file = aux[0]
+    file_mutated_per_mutant_index = {}
+    with open(mutants_log_file, "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if "Mutant " in line:
+                parts = line.split(" ")
+                mutant_index = int(parts[1][:-1])
+                raw_str = parts[2]
+                mutated_file_path = raw_str.split("//")[2][:-1]
+                file_mutated_per_mutant_index[mutant_index] = mutated_file_path
     
     print("Decompiling APK...")
     decompilation_path = tempfile.mkdtemp()
@@ -143,4 +145,4 @@ if __name__ == "__main__":
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(mutant_folders):
-            mutation_process = executor.submit(process_mutant, idx, mutant_folder, args, decompilation_path)
+            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[idx], args, decompilation_path)
