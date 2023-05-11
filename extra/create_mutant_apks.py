@@ -45,6 +45,7 @@ def sign_apk(apk):
 
 
 def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
+    print(f"Processing mutant {mutant_id}...")
     mutant_folder_path = f"{program_args.mutants_path}/{mutant_folder}"
     mutated_file = os.listdir(mutant_folder_path)[0]
     mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
@@ -55,9 +56,10 @@ def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_
         
     # override the file that was mutated in the mutant output dir
     dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
+    print(f"Copying {mutated_file_path} to {dest_file}")
     shutil.copyfile(mutated_file_path, dest_file)
 
-    print(f"> Compiling the mutant {mutant_id} APK...")
+    print(f"Compiling the mutant {mutant_id} APK...")
     mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
     subprocess.run([
         "java",
@@ -68,7 +70,7 @@ def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_
         "-o",
         mutant_apk_path,
         "-f"])
-    print(f"> Compiling finished for mutant {mutant_id}")
+    print(f"Compiling finished for mutant {mutant_id}")
 
     sign_apk(mutant_apk_path)
 
