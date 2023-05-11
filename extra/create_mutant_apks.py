@@ -150,4 +150,4 @@ if __name__ == "__main__":
             mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[idx], args, decompilation_path)
 
     # Clear decompliation path
-    shutil.rmtree(decompilation_path)
+    os.system("rm -rf " + decompilation_path)
