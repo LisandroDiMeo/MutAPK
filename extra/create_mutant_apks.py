@@ -106,17 +106,19 @@ if __name__ == "__main__":
     print("-> APK path: " + args.apk_path)
     print("-> APK Tool path: " + args.apk_tool_path)
 
-    mutants_path_listing = map(lambda file: f"{args.mutants_path}/{file}", os.listdir(args.mutants_path))
+    mutants_path_listing = list(map(lambda file: f"{args.mutants_path}/{file}", os.listdir(args.mutants_path)))
 
     # Find mutant folders
     mutant_folders = list(filter(lambda f: os.path.isdir(f), mutants_path_listing))
     print(f"Found {len(mutant_folders)} mutants")
+    for mutant_folder in mutant_folders:
+        print(f"-> {mutant_folder}")
 
     # Find and parse mutants log file
     aux = list(filter(lambda f: os.path.isfile(f) and f.endswith("-mutants.log"), mutants_path_listing))
     if len(aux) == 0:
         print("Mutants log file not found")
-        print("Files in mutants path: {args.mutants_path}")
+        print(f"Files in mutants path: {args.mutants_path}")
         for file in mutants_path_listing:
             print(f"-> {file}")
         exit(1)
