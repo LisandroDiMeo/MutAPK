@@ -52,19 +52,26 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
     with open(process_mutant_log_path, "w") as process_mutant_log:
       try:
             process_mutant_log.write(f"Started mutant {mutant_id}...\n")
+            
+            mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
+            process_mutant_log.write(f"Mutant output dir for mutant {mutant_id}: {mutant_output_dir}\n")
+
+            if not os.path.exists(mutant_output_dir):
+                os.makedirs(mutant_output_dir)
+
+            # copy the decompilation path content to the mutant output folder
+            process_mutant_log.write(f"Copying decompilation path content to the mutant output folder for mutant {mutant_id}\n")
+            mutant_decompilation_dir = mutant_output_dir + "/mutant-decompilation"
+            
+            process_mutant_log.write(f"Source decompilation path for mutant {mutant_id}: {decompilation_path}\n")
+            process_mutant_log.write(f"Mutant decompilation dir for mutant {mutant_id}: {mutant_decompilation_dir}\n")
+            shutil.copytree(decompilation_path, mutant_decompilation_dir)
+                
+            # override the file that was mutated in the mutant output dir
+            dest_file = os.path.join(mutant_decompilation_dir, mutated_file_path_in_decompilation_folder)
             mutated_file = os.listdir(mutant_folder_path)[0]
             mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
             
-            # copy the decompilation path content to the mutant output folder
-            process_mutant_log.write(f"Copying decompilation path content to the mutant output folder for mutant {mutant_id}\n")
-            mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
-            
-            process_mutant_log.write(f"Decompilation path for mutant {mutant_id}: {decompilation_path}\n")
-            process_mutant_log.write(f"Mutant output dir for mutant {mutant_id}: {mutant_output_dir}\n")
-            shutil.copytree(decompilation_path, mutant_output_dir)
-                
-            # override the file that was mutated in the mutant output dir
-            dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
             process_mutant_log.write(f"Copying {mutated_file_path} to {dest_file} for mutant {mutant_id}\n")
             shutil.copyfile(mutated_file_path, dest_file)
 
@@ -75,7 +82,7 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
                 "-jar",
                 args.apk_tool_path,
                 "b",
-                mutant_output_dir,
+                mutant_decompilation_dir,
                 "-o",
                 mutant_apk_path,
                 "-f"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
