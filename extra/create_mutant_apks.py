@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
     # Dump decompilation output to a file inside output_dir/log
     decompilation_output = decompilation_result.stdout.decode("utf-8")
-    with open(f"{args.output_dir}/log/apktool_decompile.log", "w") as f:
+    with open(f"{args.output_dir}/apktool_decompile.log", "w") as f:
         f.write(decompilation_output)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
