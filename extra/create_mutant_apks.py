@@ -44,10 +44,9 @@ def sign_apk(apk):
     os.remove(str(apk) + ".idsig")
 
 
-def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
+def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
     try:
         print(f"Processing mutant {mutant_id}...")
-        mutant_folder_path = f"{program_args.mutants_path}/{mutant_folder}"
         mutated_file = os.listdir(mutant_folder_path)[0]
         mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
         
