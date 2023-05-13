@@ -45,7 +45,7 @@ def sign_apk(apk, mutant_log_file):
 
 
 def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
-    process_mutant_log_path = program_args.output_dir + f"/process-mutant-{str(mutant_id)}.log"
+    process_mutant_log_path = program_args.output_dir + f"/mutant-{str(mutant_id)}.log"
     
     print(f"Processing mutant {mutant_id}, log file: {process_mutant_log_path}")
     
