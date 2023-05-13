@@ -156,8 +156,10 @@ if __name__ == "__main__":
     print("-> Decompilation finished!")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-        for idx, mutant_folder in enumerate(mutant_folders):
-            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[str(idx)], args, decompilation_path)
+        for idx, mutant_folder in enumerate(sorted(mutant_folders)):
+            file_mutated = file_mutated_per_mutant_index[str(idx + 1)]
+            print("Sending job for mutant " + str(idx + 1) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
+            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated, args, decompilation_path)
 
     # Clear decompliation path
     os.system("rm -rf " + decompilation_path)
