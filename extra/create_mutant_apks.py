@@ -45,34 +45,46 @@ def sign_apk(apk):
 
 
 def process_mutant(mutant_id, mutant_folder, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
-    print(f"Processing mutant {mutant_id}...")
-    mutant_folder_path = f"{program_args.mutants_path}/{mutant_folder}"
-    mutated_file = os.listdir(mutant_folder_path)[0]
-    mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
-    
-    # copy the decompilation path content to the mutant output folder
-    mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
-    shutil.copytree(decompilation_path, mutant_output_dir)
+    try:
+        print(f"Processing mutant {mutant_id}...")
+        mutant_folder_path = f"{program_args.mutants_path}/{mutant_folder}"
+        mutated_file = os.listdir(mutant_folder_path)[0]
+        mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
         
-    # override the file that was mutated in the mutant output dir
-    dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
-    print(f"Copying {mutated_file_path} to {dest_file}")
-    shutil.copyfile(mutated_file_path, dest_file)
+        # copy the decompilation path content to the mutant output folder
+        print(f"Copying decompilation path content to the mutant output folder for mutant {mutant_id}")
+        mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
+        
+        print(f"Decompilation path for mutant {mutant_id}: {decompilation_path}")
+        print(f"Mutant output dir for mutant {mutant_id}: {mutant_output_dir}")
+        shutil.copytree(decompilation_path, mutant_output_dir)
+            
+        # override the file that was mutated in the mutant output dir
+        dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
+        print(f"Copying {mutated_file_path} to {dest_file} for mutant {mutant_id}")
+        shutil.copyfile(mutated_file_path, dest_file)
 
-    print(f"Compiling the mutant {mutant_id} APK...")
-    mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
-    subprocess.run([
-        "java",
-        "-jar",
-        args.apk_tool_path,
-        "b",
-        mutant_output_dir,
-        "-o",
-        mutant_apk_path,
-        "-f"])
-    print(f"Compiling finished for mutant {mutant_id}")
+        print(f"Compiling APK for mutant {mutant_id}")
+        mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
+        apktool_result = subprocess.run([
+            "java",
+            "-jar",
+            args.apk_tool_path,
+            "b",
+            mutant_output_dir,
+            "-o",
+            mutant_apk_path,
+            "-f"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        print(f"Compiling finished for mutant {mutant_id}")
 
-    sign_apk(mutant_apk_path)
+        if not os.path.exists(mutant_apk_path):
+            print(f"APK file not found for mutant {mutant_id}")
+            print(apktool_result.stdout.decode("utf-8"))
+            exit(1)
+
+        sign_apk(mutant_apk_path)
+    except Exception as e:
+        print(f"Error for mutant {mutant_id}: {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Argument parser for Creating Mutatant APKs")
@@ -157,18 +169,18 @@ if __name__ == "__main__":
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(sorted(mutant_folders)):
-            key = idx + 1
-            if key not in file_mutated_per_mutant_index:
-                print(f"Mutant {key} not found in mutants log file")
+            mutant_id = idx + 1
+            if mutant_id not in file_mutated_per_mutant_index:
+                print(f"Mutant {mutant_id} not found in mutants log file")
                 # print all keys
                 print("Keys in mutants log file:")
                 for k in file_mutated_per_mutant_index:
                     print(f"-> {k}")
                 exit(1)
             
-            file_mutated = file_mutated_per_mutant_index[key]
-            print("Sending job for mutant " + str(key) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
-            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated, args, decompilation_path)
+            file_mutated = file_mutated_per_mutant_index[mutant_id]
+            print("Sending job for mutant " + str(mutant_id) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
+            mutation_process = executor.submit(process_mutant, mutant_id, mutant_folder, file_mutated, args, decompilation_path)
 
     # Clear decompliation path
     os.system("rm -rf " + decompilation_path)
