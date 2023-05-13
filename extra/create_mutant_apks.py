@@ -157,8 +157,17 @@ if __name__ == "__main__":
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(sorted(mutant_folders)):
-            file_mutated = file_mutated_per_mutant_index[str(idx + 1)]
-            print("Sending job for mutant " + str(idx + 1) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
+            key = idx + 1
+            if key not in file_mutated_per_mutant_index:
+                print(f"Mutant {key} not found in mutants log file")
+                # print all keys
+                print("Keys in mutants log file:")
+                for k in file_mutated_per_mutant_index:
+                    print(f"-> {k}")
+                exit(1)
+            
+            file_mutated = file_mutated_per_mutant_index[key]
+            print("Sending job for mutant " + str(key) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
             mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated, args, decompilation_path)
 
     # Clear decompliation path
