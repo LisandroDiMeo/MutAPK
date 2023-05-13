@@ -116,6 +116,9 @@ if __name__ == "__main__":
     aux = list(filter(lambda f: os.path.isfile(f) and f.endswith("-mutants.log"), mutants_path_listing))
     if len(aux) == 0:
         print("Mutants log file not found")
+        print("Files in mutants path: {args.mutants_path}")
+        for file in mutants_path_listing:
+            print(f"-> {file}")
         exit(1)
 
     mutants_log_file = aux[0]
