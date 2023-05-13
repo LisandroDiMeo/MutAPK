@@ -82,6 +82,8 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
             exit(1)
 
         sign_apk(mutant_apk_path)
+
+        print("Mutant APK successfully created for mutant " + str(mutant_id))
     except Exception as e:
         print(f"Error for mutant {mutant_id}: {e}")
 
