@@ -8,19 +8,19 @@ import tempfile
 import shutil
 
 
-def sign_apk(apk, log_file):
-    log_file.write(f'Signing APK: {apk}\n')
+def sign_apk(apk, mutant_log_file):
+    mutant_log_file.write(f'Signing APK: {apk}\n')
 
     build_tools_dir = os.environ["ANDROID_HOME"] + "/build-tools/31.0.0/"
     zip_align_command = [build_tools_dir + "zipalign", "-p", "4", apk, str(apk) + ".aligned"]
-    log_file.write(f'Running command: {zip_align_command}\n')
-    subprocess.run(zip_align_command, stdout=log_file, stderr=log_file)
+    mutant_log_file.write(f'Running command: {zip_align_command}\n')
+    subprocess.run(zip_align_command, stdout=mutant_log_file, stderr=mutant_log_file)
 
     # there is a bug with zipalign, we need two iterations, see:
     # https://stackoverflow.com/questions/38047358/zipalign-verification-failed-resources-arsc-bad-1
     zip_align_command = [build_tools_dir + "zipalign", "-f", "-p", "4", str(apk) + ".aligned", str(apk) + ".aligned2"]
-    log_file.write(f'Running command: {zip_align_command}\n')
-    subprocess.run(zip_align_command, stdout=log_file, stderr=log_file)
+    mutant_log_file.write(f'Running command: {zip_align_command}\n')
+    subprocess.run(zip_align_command, stdout=mutant_log_file, stderr=mutant_log_file)
 
     os.remove(str(apk) + ".aligned")
     os.rename(str(apk) + ".aligned2", apk)
@@ -32,13 +32,13 @@ def sign_apk(apk, log_file):
         android_home = os.environ["ANDROID_EMULATOR_HOME"]
 
     debug_keystore_path = os.path.join(android_home, "debug.keystore")
-    log_file.write("Using debug keystore: " + debug_keystore_path + "\n")
+    mutant_log_file.write("Using debug keystore: " + debug_keystore_path + "\n")
 
     sign_apk_command = [build_tools_dir + "apksigner", "sign", "--ks", debug_keystore_path,
                         "--ks-key-alias", "androiddebugkey", "--ks-pass", "pass:android",
                         "--key-pass", "pass:android", apk]
 
-    log_file.write(f'Running command: {sign_apk_command}\n')
+    mutant_log_file.write(f'Running command: {sign_apk_command}\n')
     subprocess.run(sign_apk_command)
 
     os.remove(str(apk) + ".idsig")
@@ -49,26 +49,26 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
     
     print(f"Processing mutant {mutant_id}, log file: {process_mutant_log_path}")
     
-    with open(process_mutant_log_path, "w") as f:
+    with open(process_mutant_log_path, "w") as process_mutant_log:
       try:
-            f.write(f"Started mutant {mutant_id}...\n")
+            process_mutant_log.write(f"Started mutant {mutant_id}...\n")
             mutated_file = os.listdir(mutant_folder_path)[0]
             mutated_file_path = f"{mutant_folder_path}/{mutated_file}" # The path to the modified file
             
             # copy the decompilation path content to the mutant output folder
-            f.write(f"Copying decompilation path content to the mutant output folder for mutant {mutant_id}\n")
+            process_mutant_log.write(f"Copying decompilation path content to the mutant output folder for mutant {mutant_id}\n")
             mutant_output_dir = program_args.output_dir + "/mutant-" + str(mutant_id)
             
-            f.write(f"Decompilation path for mutant {mutant_id}: {decompilation_path}\n")
-            f.write(f"Mutant output dir for mutant {mutant_id}: {mutant_output_dir}\n")
+            process_mutant_log.write(f"Decompilation path for mutant {mutant_id}: {decompilation_path}\n")
+            process_mutant_log.write(f"Mutant output dir for mutant {mutant_id}: {mutant_output_dir}\n")
             shutil.copytree(decompilation_path, mutant_output_dir)
                 
             # override the file that was mutated in the mutant output dir
             dest_file = os.path.join(mutant_output_dir, mutated_file_path_in_decompilation_folder)
-            f.write(f"Copying {mutated_file_path} to {dest_file} for mutant {mutant_id}\n")
+            process_mutant_log.write(f"Copying {mutated_file_path} to {dest_file} for mutant {mutant_id}\n")
             shutil.copyfile(mutated_file_path, dest_file)
 
-            f.write(f"Compiling APK for mutant {mutant_id}\n")
+            process_mutant_log.write(f"Compiling APK for mutant {mutant_id}\n")
             mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
             apktool_result = subprocess.run([
                 "java",
@@ -79,25 +79,26 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
                 "-o",
                 mutant_apk_path,
                 "-f"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            f.write(f"Compiling finished for mutant {mutant_id}\n")
+            process_mutant_log.write(f"Compiling finished for mutant {mutant_id}\n")
 
             # Dump apktool output to a file inside mutant_output_idr
             apktool_output = apktool_result.stdout.decode("utf-8")
             apktool_compile_log_path = f"{mutant_output_dir}/apktool_compile_mutant_apk.log"
-            f.write(f"Dumping apktool compile output to {apktool_compile_log_path}\n")
-            with open(apktool_compile_log_path, "w") as f:
-                f.write(apktool_output)
+            process_mutant_log.write(f"Dumping apktool compile output to {apktool_compile_log_path}\n")
+            with open(apktool_compile_log_path, "w") as apktool_compile_log:
+                apktool_compile_log.write(apktool_output)
 
             if not os.path.exists(mutant_apk_path):
-                f.write(f"APK file not found for mutant {mutant_id}\n")
+                process_mutant_log.write(f"APK file not found for mutant {mutant_id}\n")
                 return
 
-            sign_apk(mutant_apk_path, f)
+            sign_apk(mutant_apk_path, process_mutant_log)
 
             print("Mutant APK successfully created for mutant " + str(mutant_id))
+            process_mutant_log.write("Mutant APK successfully created for mutant " + str(mutant_id) + "\n")
       except Exception as e:
-          f.write(f"Error for mutant {mutant_id}: {e}\n")
           print(f"Error for mutant {mutant_id}")
+          process_mutant_log.write(f"Error for mutant {mutant_id}: {e}\n")
 
     print(f"Finished processing mutant {mutant_id}")
 
