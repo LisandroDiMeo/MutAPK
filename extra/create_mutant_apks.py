@@ -115,6 +115,7 @@ if __name__ == "__main__":
         print(f"-> {mutant_folder}")
 
     # Find and parse mutants log file
+    print("Parsing mutants log file")
     aux = list(filter(lambda f: os.path.isfile(f) and f.endswith("-mutants.log"), mutants_path_listing))
     if len(aux) == 0:
         print("Mutants log file not found")
@@ -135,6 +136,10 @@ if __name__ == "__main__":
                 mutated_file_path = raw_str.split("//")[2][:-1]
                 file_mutated_per_mutant_index[mutant_index] = mutated_file_path
     
+    print("Files mutated per mutant:")
+    for mutant_index in file_mutated_per_mutant_index:
+        print(f"-> Mutant {mutant_index}: {file_mutated_per_mutant_index[mutant_index]}")
+
     print("Decompiling APK...")
     decompilation_path = tempfile.mkdtemp()
     print(f"-> Decompilation path: {decompilation_path}")
@@ -152,7 +157,7 @@ if __name__ == "__main__":
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(mutant_folders):
-            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[idx], args, decompilation_path)
+            mutation_process = executor.submit(process_mutant, idx, mutant_folder, file_mutated_per_mutant_index[str(idx)], args, decompilation_path)
 
     # Clear decompliation path
     os.system("rm -rf " + decompilation_path)
