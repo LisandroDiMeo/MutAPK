@@ -44,7 +44,7 @@ def sign_apk(apk, mutant_log_file):
     os.remove(str(apk) + ".idsig")
 
 
-def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompilation_folder, program_args, decompilation_path):
+def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompilation_folder, mutant_type, program_args, decompilation_path):
     process_mutant_log_path = program_args.output_dir + f"/mutant-{str(mutant_id)}.log"
     
     print(f"Processing mutant {mutant_id}, log file: {process_mutant_log_path}")
@@ -74,6 +74,12 @@ def process_mutant(mutant_id, mutant_folder_path, mutated_file_path_in_decompila
             
             process_mutant_log.write(f"Copying {mutated_file_path} to {dest_file} for mutant {mutant_id}\n")
             shutil.copyfile(mutated_file_path, dest_file)
+
+            # Dump mutant_type in a file inside mutant_output_dir
+            mutant_type_file_path = f"{mutant_output_dir}/mutant_type.txt"
+            process_mutant_log.write(f"Dumping mutant type to {mutant_type_file_path} for mutant {mutant_id}\n")
+            with open(mutant_type_file_path, "w") as mutant_type_file:
+                mutant_type_file.write(mutant_type)
 
             process_mutant_log.write(f"Compiling APK for mutant {mutant_id}\n")
             mutant_apk_path = mutant_output_dir + "/" + os.path.basename(program_args.apk_path)
@@ -160,20 +166,26 @@ if __name__ == "__main__":
         exit(1)
 
     mutants_log_file = aux[0]
-    file_mutated_per_mutant_index = {}
+
+    files_mutated = {}
+    mutants_type = {}
     with open(mutants_log_file, "r") as f:
         lines = f.readlines()
         for line in lines:
             if "Mutant " in line:
                 parts = line.split(" ")
-                mutant_index = int(parts[1][:-1])
+                mutant_id = int(parts[1][:-1])
+
+                # Calculate the file mutated
                 raw_str = parts[2]
                 mutated_file_path = raw_str.split("//")[2][:-1]
-                file_mutated_per_mutant_index[mutant_index] = mutated_file_path
+                files_mutated[mutant_id] = mutated_file_path
+
+                mutants_type[mutant_id] =  parts[3]
     
     print("Files mutated per mutant:")
-    for mutant_index in file_mutated_per_mutant_index:
-        print(f"-> Mutant {mutant_index}: {file_mutated_per_mutant_index[mutant_index]}")
+    for mutant_id in files_mutated:
+        print(f"-> Mutant {mutant_id}: {files_mutated[mutant_id]}")
 
     print("Decompiling APK...")
     decompilation_path = tempfile.mkdtemp()
@@ -198,17 +210,18 @@ if __name__ == "__main__":
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for idx, mutant_folder in enumerate(sorted(mutant_folders)):
             mutant_id = idx + 1
-            if mutant_id not in file_mutated_per_mutant_index:
+            if mutant_id not in files_mutated:
                 print(f"Mutant {mutant_id} not found in mutants log file")
                 # print all keys
                 print("Keys in mutants log file:")
-                for k in file_mutated_per_mutant_index:
+                for k in files_mutated:
                     print(f"-> {k}")
                 exit(1)
             
-            file_mutated = file_mutated_per_mutant_index[mutant_id]
-            print("Sending job for mutant " + str(mutant_id) + " with folder " + mutant_folder + " and file mutated " + file_mutated)
-            mutation_process = executor.submit(process_mutant, mutant_id, mutant_folder, file_mutated, args, decompilation_path)
+            file_mutated = files_mutated[mutant_id]
+            mutant_type = mutants_type[mutant_id]
+            print("Sending job for mutant " + str(mutant_id) + " with folder " + mutant_folder + ", file mutated " + file_mutated + " and type " + mutant_type)
+            mutation_process = executor.submit(process_mutant, mutant_id, mutant_folder, file_mutated, mutant_type, args, decompilation_path)
 
     # Clear decompliation path
     os.system("rm -rf " + decompilation_path)
