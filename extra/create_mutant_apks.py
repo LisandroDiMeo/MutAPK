@@ -188,7 +188,8 @@ if __name__ == "__main__":
         print(f"-> Mutant {mutant_id}: {files_mutated[mutant_id]}")
 
     print("Decompiling APK...")
-    decompilation_path = tempfile.mkdtemp()
+    decompilation_path = os.path.join(args.output_dir, "original-apk-decompilation")
+    os.mkdir(decompilation_path)
     print(f"-> Decompilation path: {decompilation_path}")
 
     decompilation_result = subprocess.run([
@@ -222,6 +223,3 @@ if __name__ == "__main__":
             mutant_type = mutants_type[mutant_id]
             print("Sending job for mutant " + str(mutant_id) + " with folder " + mutant_folder + ", file mutated " + file_mutated + " and type " + mutant_type)
             mutation_process = executor.submit(process_mutant, mutant_id, mutant_folder, file_mutated, mutant_type, args, decompilation_path)
-
-    # Clear decompliation path
-    os.system("rm -rf " + decompilation_path)
